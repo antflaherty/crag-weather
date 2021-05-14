@@ -4,7 +4,9 @@ const xml = require('xml-js');
 const fs = require('fs');
 const path = require('path');
 
-const WEATHER_URL = 'http://api.weatherapi.com/v1/current.json'
+const WEATHER_URL = 'http://api.weatherapi.com/v1/'
+const FORECAST_URI = 'forecast.json';
+const HISTORY_URI = 'history.json'
 
 
 function getWeatherApiKey() {
@@ -37,19 +39,23 @@ function extractNiceCragArray(data) {
 	return cragArray = parsedData.ArrayOfCragMarker.CragMarker;
 }
 
-function buildWeatherUrl(crag) {
+function buildWeatherUrl(crag, uri) {
 	const lat = crag.Lat._text;
 	const long = crag.Lon._text;
 
 	const apiKey = getWeatherApiKey();
 
-	return `${WEATHER_URL}?key=${apiKey}&q=${lat},${long}`;
+	return `${WEATHER_URL}${uri}?key=${apiKey}&q=${lat},${long}`;
 
 }
 
-function getCurrentWeatherAtCrag(crag) {
-	const url = buildWeatherUrl(crag);
+function getTodayForecast(crag) {
+	let url = buildWeatherUrl(crag,FORECAST_URI);
 
+	const today = new Date();
+	const formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+
+	url += `&dt=${formattedTodayDate}`;
 
 	return new Promise((resolve, reject) => {
 		http.get(url, (res) => {
@@ -66,11 +72,22 @@ function getCurrentWeatherAtCrag(crag) {
 	});
 }
 
-async function run() {
-	const crags = await getCragsList();
+async function addWeatherToCrag(crag){
+	const todayWeather = JSON.parse(await getTodayForecast(crag));
 
-	const weather = await getCurrentWeatherAtCrag(crags[0]);
-	console.log(weather);
+	return {...crag, todayWeather};
+}
+
+async function getWeatherValusAtCrags(crags) {
+	return  crags.map(addWeatherToCrag);
+}
+
+async function run() {
+	let crags = await getCragsList();
+
+	crags = getWeatherValusAtCrags(crags.slice(0,10));
+
+	console.log(crags);
 }
 
 run();
