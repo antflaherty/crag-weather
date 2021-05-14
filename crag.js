@@ -30,7 +30,7 @@ function extractNiceCragArray(data) {
             region: crag.Subtitle._text,
             location: {
                 lat: crag.Lat._text,
-                long: crag.Lon._text
+                lon: crag.Lon._text
             }
         };
     });

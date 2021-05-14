@@ -13,10 +13,10 @@ function getWeatherApiKey() {
     return JSON.parse(secretsFile).WEATHER_API_KEY;
 }
 
-function buildWeatherUrl({ lat, long }, uri) {
+function buildWeatherUrl({ lat, lon }, uri) {
     const apiKey = getWeatherApiKey();
 
-    return `${WEATHER_URL}${uri}?key=${apiKey}&q=${lat},${long}`;
+    return `${WEATHER_URL}${uri}?key=${apiKey}&q=${lat},${lon}`;
 
 }
 

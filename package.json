@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "geo-distance": "^0.2.0",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   }
