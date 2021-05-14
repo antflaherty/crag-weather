@@ -2,8 +2,7 @@ const Distance = require('geo-distance');
 
 const crag = require('./crag');
 const weather = require('./weather');
-
-const MY_HOUSE = {lat: 54.001490, lon: -1.574530};
+const geocode = require('./geocode');
 
 async function addWeatherToCrag(crag) {
 	const forecast = JSON.parse(await weather.getForecast(crag.location));
@@ -31,16 +30,18 @@ function getDistance(a,b) {
 	return Distance.between(a,b);
 }
 
-function getDistanceFromMyHouse(crags) {
+function addDistanceToCrags(crags, userLocation) {
 	return crags.map(crag => {
-		return {...crag, distance: getDistance(MY_HOUSE, crag.location)};
+		return {...crag, distance: getDistance(userLocation, crag.location)};
 	})
 }
 
 async function run() {
 	let crags = await crag.getCragsList();
 
-	crags = getDistanceFromMyHouse(crags);
+	const userLocation = await geocode.getLocation('Harrogate UK');
+
+	crags = addDistanceToCrags(crags, userLocation);
 	crags = crags.filter(crag => crag.distance.radians < Distance('7 km').radians);
 
 	crags = await Promise.all(getWeatherValusAtCrags(crags));
