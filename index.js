@@ -21,30 +21,42 @@ function displayCragDetails(crag) {
 ${crag.region}
 Distance from HG3: ${Distance(crag.distance).human_readable()}
 Yesterday total precipitation: ${crag.yesterday.forecast.forecastday[0].day.totalprecip_mm}mm
-Chance of rain today: ${crag.forecast.forecast.forecastday[0].day.daily_chance_of_rain}%
-Chance of rain tomorrow: ${crag.forecast.forecast.forecastday[1].day.daily_chance_of_rain}%
+Today total precipitation: ${crag.forecast.forecast.forecastday[0].day.totalprecip_mm}mm
+Tomorrow total precipitation: ${crag.forecast.forecast.forecastday[1].day.totalprecip_mm}mm
+rank: ${crag.rank}
 `);
 }
 
-function getDistance(a,b) {
-	return Distance.between(a,b);
+function getDistance(a, b) {
+	return Distance.between(a, b);
 }
 
 function addDistanceToCrags(crags, userLocation) {
 	return crags.map(crag => {
-		return {...crag, distance: getDistance(userLocation, crag.location)};
+		return { ...crag, distance: getDistance(userLocation, crag.location) };
 	})
+}
+
+function rank(crag) {
+	crag.rank = Math.sqrt(crag.yesterday.forecast.forecastday[0].day.totalprecip_mm + 1) *
+		(crag.forecast.forecast.forecastday[0].day.totalprecip_mm + 1) *
+		(crag.forecast.forecast.forecastday[1].day.totalprecip_mm + 1) *
+		Math.pow(10000 * crag.distance.radians,0.3);
 }
 
 async function run() {
 	let crags = await crag.getCragsList();
 
-	const userLocation = await geocode.getLocation('Harrogate UK');
+	const userLocation = await geocode.getLocation('petty whin close');
 
+	
 	crags = addDistanceToCrags(crags, userLocation);
-	crags = crags.filter(crag => crag.distance.radians < Distance('7 km').radians);
-
+	crags = crags.filter(crag => crag.distance.radians < Distance('10 km').radians);
+	
 	crags = await Promise.all(getWeatherValusAtCrags(crags));
+
+	crags.forEach(rank);
+	crags.sort((a, b) => a.rank - b.rank);
 
 	crags.forEach(displayCragDetails);
 }
