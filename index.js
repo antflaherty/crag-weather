@@ -1,5 +1,12 @@
 const https = require('https');
 const xml = require('xml-js');
+const fs = require('fs');
+const path = require('path');
+
+function getWeatherApiKey() {
+	const secretsFile = fs.readFileSync(path.resolve('secrets.json'));
+	return JSON.parse(secretsFile).WEATHER_API_KEY;
+}
 
 function getCragsList() {
 	return new Promise((resolve, reject) => {
