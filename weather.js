@@ -36,8 +36,10 @@ function performForecastRequest(url) {
     });
 }
 
-function getTodayForecast(location) {
+function getForecast(location) {
     let url = buildWeatherUrl(location, FORECAST_URI);
+
+    url += '&days=3';
 
     return performForecastRequest(url);
 }
@@ -53,4 +55,4 @@ function getYesterdayWeather(location) {
     return performForecastRequest(url);
 }
 
-module.exports = { getTodayForecast, getYesterdayWeather };
+module.exports = { getForecast, getYesterdayWeather };
