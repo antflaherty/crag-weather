@@ -20,9 +20,7 @@ function buildWeatherUrl({ lat, long }, uri) {
 
 }
 
-function getTodayForecast(location) {
-    let url = buildWeatherUrl(location, FORECAST_URI);
-
+function performForecastRequest(url) {
     return new Promise((resolve, reject) => {
         http.get(url, (res) => {
             let data = '';
@@ -38,6 +36,12 @@ function getTodayForecast(location) {
     });
 }
 
+function getTodayForecast(location) {
+    let url = buildWeatherUrl(location, FORECAST_URI);
+
+    return performForecastRequest(url);
+}
+
 function getYesterdayWeather(location) {
     let url = buildWeatherUrl(location, HISTORY_URI);
 
@@ -46,19 +50,7 @@ function getYesterdayWeather(location) {
     const yesterdayFormatted = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`;
     url += `&dt=${yesterdayFormatted}`;
 
-    return new Promise((resolve, reject) => {
-        http.get(url, (res) => {
-            let data = '';
-            res.resume();
-            res.on('data', (chunk) => { data += chunk });
-            res.on('end', () => {
-                resolve(data);
-                if (!res.complete)
-                    reject(
-                        'The connection was terminated while the message was still being sent');
-            });
-        });
-    });
+    return performForecastRequest(url);
 }
 
 module.exports = { getTodayForecast, getYesterdayWeather };
