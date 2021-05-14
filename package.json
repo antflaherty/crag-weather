@@ -1,0 +1,15 @@
+{
+  "name": "crag-weather",
+  "version": "1.0.0",
+  "description": "Find out the weather at crags in the UK!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "xml-js": "^1.6.11",
+    "xml2js": "^0.4.23"
+  }
+}
