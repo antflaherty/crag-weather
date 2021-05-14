@@ -1,8 +1,8 @@
-const https = require('https');
 const http = require('http');
-const xml = require('xml-js');
 const fs = require('fs');
 const path = require('path');
+
+const crag = require('./crag');
 
 const WEATHER_URL = 'http://api.weatherapi.com/v1/'
 const FORECAST_URI = 'forecast.json';
@@ -14,43 +14,15 @@ function getWeatherApiKey() {
 	return JSON.parse(secretsFile).WEATHER_API_KEY;
 }
 
-function getCragsList() {
-	return new Promise((resolve, reject) => {
-		https.get('https://www.thebmc.co.uk/Services/MapService.asmx/LoadCrags', (res) => {
-			let data = '';
-			res.resume();
-			res.on('data', (chunk) => { data += chunk });
-			res.on('end', () => {
-				resolve(extractNiceCragArray(data));
-				if (!res.complete)
-					reject(
-						'The connection was terminated while the message was still being sent');
-			});
-		});
-	});
-}
-
-function parseResponseToJson(data) {
-	return JSON.parse(xml.xml2json(data, { compact: true }));
-}
-
-function extractNiceCragArray(data) {
-	const parsedData = parseResponseToJson(data);
-	return cragArray = parsedData.ArrayOfCragMarker.CragMarker;
-}
-
-function buildWeatherUrl(crag, uri) {
-	const lat = crag.Lat._text;
-	const long = crag.Lon._text;
-
+function buildWeatherUrl({lat, long}, uri) {
 	const apiKey = getWeatherApiKey();
 
 	return `${WEATHER_URL}${uri}?key=${apiKey}&q=${lat},${long}`;
 
 }
 
-function getTodayForecast(crag) {
-	let url = buildWeatherUrl(crag,FORECAST_URI);
+function getTodayForecast(location) {
+	let url = buildWeatherUrl(location,FORECAST_URI);
 
 	return new Promise((resolve, reject) => {
 		http.get(url, (res) => {
@@ -67,8 +39,8 @@ function getTodayForecast(crag) {
 	});
 }
 
-function getYesterdayWeather(crag) {
-	let url = buildWeatherUrl(crag,HISTORY_URI);
+function getYesterdayWeather(location) {
+	let url = buildWeatherUrl(location,HISTORY_URI);
 
 	const now = Date.now();
 	const yesterday = new Date(now - 24 * 60 * 60 * 1000);
@@ -91,8 +63,8 @@ function getYesterdayWeather(crag) {
 }
 
 async function addWeatherToCrag(crag){
-	const forecast = JSON.parse(await getTodayForecast(crag));
-	const yesterday = JSON.parse(await getYesterdayWeather(crag));
+	const forecast = JSON.parse(await getTodayForecast(crag.location));
+	const yesterday = JSON.parse(await getYesterdayWeather(crag.location));
 
 	return {...crag, forecast, yesterday};
 }
@@ -102,13 +74,13 @@ function getWeatherValusAtCrags(crags) {
 }
 
 async function run() {
-	let crags = await getCragsList();
+	let crags = await crag.getCragsList();
 
-	crags = await Promise.all(getWeatherValusAtCrags(crags.slice(0,20)));
+	crags = await Promise.all(getWeatherValusAtCrags(crags.slice(0,2)));
 
 	crags.forEach((crag) => {
 		console.log(
-`${crag.Title._text}
+`${crag.name}
 Yesterday total precipitation: ${crag.yesterday.forecast.forecastday[0].day.totalprecip_mm}mm
 Chance of rain today: ${crag.forecast.forecast.forecastday[0].day.daily_chance_of_rain}%
 `);
