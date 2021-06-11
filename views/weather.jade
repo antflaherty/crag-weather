@@ -1,5 +1,7 @@
 extends layout
 
 block content
-  h1 nearest crag to #{location}
-  p= closestName
+  h1 Crags within #{radius}km of #{location}
+  ul
+  each val in crags
+    li= val.name
