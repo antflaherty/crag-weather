@@ -3,6 +3,6 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  input
-  button= "click"
-  script(src='javascripts/index.js')
+  form(action="/weather/local" method="GET")
+    input(name="location")
+    button= "click"
