@@ -4,5 +4,6 @@ block content
   h1= title
   p Welcome to #{title}
   form(action="/weather/local" method="GET")
-    input(name="location")
+    input(name="location" label="location")
+    input(name="radius" label="radius (km)" type="number")
     button= "click"

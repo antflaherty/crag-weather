@@ -1,10 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res) {
-    const {location} = req.query; 
-    res.render('weather', { location });
+const cragWeather = require('../../server/index');
+
+router.get('/', async function(req, res) {
+    const {location, radius} = req.query;
+    const crags = await cragWeather.getCragsWithinRadius(location, radius);
+    console.log(crags);
+    res.render('weather',   { location, closestName: crags[0].name });
 });
 
 module.exports = router;

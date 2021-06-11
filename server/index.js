@@ -59,6 +59,22 @@ async function run() {
 	crags.sort((a, b) => a.rank - b.rank);
 
 	crags.forEach(displayCragDetails);
+
+	return crags;
 }
 
-run();
+
+async function getCragsWithinRadius(location, radius) {
+	let crags = await crag.getCragsList();
+
+	const userLocation = await geocode.getLocation(location);
+	
+	crags = addDistanceToCrags(crags, userLocation);
+	crags = crags.filter(crag => crag.distance.radians < Distance(`${radius} km`).radians);
+
+	crags.sort((a, b) => a.distance.radians - b.distance.radians);
+
+	return crags;
+}
+
+module.exports = {getCragsWithinRadius};
