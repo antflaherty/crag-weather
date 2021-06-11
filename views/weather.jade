@@ -3,5 +3,7 @@ extends layout
 block content
   h1 Crags within #{radius}km of #{location}
   ul
-  each val in crags
-    li= val.name
+  each crag in crags
+    li= crag.name
+    if crag.forecast
+      p Rain today: #{crag.forecast.current.precip_mm}mm

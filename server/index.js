@@ -77,4 +77,17 @@ async function getCragsWithinRadius(location, radius) {
 	return crags;
 }
 
-module.exports = {getCragsWithinRadius};
+async function getWeatherForFirstFiveCragsWithinRadius(location, radius) {
+	let crags = await crag.getCragsList();
+
+	const userLocation = await geocode.getLocation(location);
+	
+	crags = addDistanceToCrags(crags, userLocation);
+	crags = crags.filter(crag => crag.distance.radians < Distance(`${radius} km`).radians);
+
+	crags.sort((a, b) => a.distance.radians - b.distance.radians);
+
+	return await Promise.all(getWeatherValusAtCrags(crags.slice(0,5)));
+}
+
+module.exports = {getCragsWithinRadius, getWeatherForFirstFiveCragsWithinRadius};
