@@ -5,7 +5,8 @@ fetch('/weather/fake/data')
 
 function insertCragsIntoList(crags) {
     const list = document.getElementById('crags-list');
+    console.log(crags[0]);
     crags.forEach(crag => {
-        list.innerHTML += `<li>${crag.name}</li>`;
+        list.innerHTML += `<li>${crag.name}<img src="${crag.forecast.current.condition.icon}"/></li>`;
     })
 }
